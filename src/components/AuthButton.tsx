@@ -34,6 +34,11 @@ export function AuthButton({ signedIn, isAdmin }: Props) {
       <Link className="btn-mini" href="/me">
         내 정보
       </Link>
+      {isAdmin && (
+        <Link className="btn-mini" href="/admin/collections">
+          수집 현황
+        </Link>
+      )}
       <button className="btn-mini" onClick={signOut} disabled={busy}>
         로그아웃
       </button>

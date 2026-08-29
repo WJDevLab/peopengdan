@@ -1,6 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { resolveSort, type PersonSlug } from "@/lib/constants";
-import type { VideoCard, VideoStatusFilter } from "@/types/db";
+import type { CollectionRunRow, VideoCard, VideoStatusFilter } from "@/types/db";
+
+/** 최근 수집 회차 기록. 어드민 전용(`/admin/collections`). RLS가 실제 접근을 막는다. */
+export async function fetchCollectionRuns(limit = 30): Promise<CollectionRunRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("collection_runs")
+    .select("id, started_at, finished_at, quota_used, videos_seen, videos_new, status, error_message")
+    .order("started_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error("수집 기록 조회 실패: " + error.message);
+  return (data ?? []) as CollectionRunRow[];
+}
 
 export type VideoFilters = {
   person?: string;

@@ -522,6 +522,15 @@ body {
   background: rgba(6, 12, 16, .82); color: #fff;
   font-variant-numeric: tabular-nums;
 }
+
+/* 본 영상 표시. 로그인과 무관하게 이 기기에서 재생을 열어본 적 있으면 붙는다. */
+.thumb--watched img { opacity: .5; filter: saturate(.7); }
+.badge-watched {
+  position: absolute; left: .38rem; bottom: .38rem;
+  font-size: .66rem; font-weight: 600;
+  padding: .1rem .38rem; border-radius: 3px;
+  background: rgba(6, 12, 16, .82); color: #fff;
+}
 .badge-new {
   position: absolute; left: .38rem; top: .38rem;
   font-family: var(--font-mono);
@@ -710,6 +719,21 @@ body {
   letter-spacing: -.01em;
 }
 .stat dd small { font-size: .72rem; font-weight: var(--w-ui); color: var(--muted); margin-left: .22rem; }
+
+/* ── 수집 현황 할당량 막대 ─────────────────────────────── */
+.quota-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.quota-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width .3s ease;
+}
 
 /* ── 검색·필터 (상단 바 + 접히는 패널) ─────────────────── */
 .filter-zone { border-bottom: 1px solid var(--line); }

@@ -56,6 +56,18 @@ export type BlockedVideoRow = {
   blocked_at: string;
 };
 
+/** 수집기(scripts/collect.ts) 실행 1회차 기록. 수집 현황 대시보드에서 쓴다. */
+export type CollectionRunRow = {
+  id: string;
+  started_at: string;
+  finished_at: string | null;
+  quota_used: number;
+  videos_seen: number;
+  videos_new: number;
+  status: "running" | "success" | "failed";
+  error_message: string | null;
+};
+
 /** 목록 화면에서 실제로 쓰는 컬럼만 추린 형태. */
 export type VideoCard = {
   id: string;

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { boardCategoryLabel } from "@/lib/constants";
@@ -9,6 +10,27 @@ import { CommentDelete, PostActions } from "@/components/board/PostActions";
 import type { CommentItem, PostDetail } from "@/types/db";
 
 export const dynamic = "force-dynamic";
+
+/** 카톡 등으로 게시글을 공유하면 글 제목·본문 일부가 미리보기에 뜨게 한다. */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const db = await createClient();
+  const { data } = await db.from("posts").select("title, body").eq("id", id).single();
+  if (!data) return {};
+
+  const excerpt = data.body.replace(/\s+/g, " ").trim().slice(0, 100);
+  const title = `${data.title} · 퍼스트펭귄단`;
+  return {
+    title,
+    description: excerpt,
+    openGraph: { title, description: excerpt },
+    twitter: { title, description: excerpt },
+  };
+}
 
 /** 닉네임 첫 글자로 만드는 아바타. 외부 이미지를 쓰지 않는다 (ADR-028). */
 function Avatar({ name, size = "sm" }: { name: string; size?: "sm" | "md" }) {

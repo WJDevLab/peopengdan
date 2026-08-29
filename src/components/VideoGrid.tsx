@@ -9,6 +9,27 @@ import { Icon } from "./Icon";
 import type { VideoCard } from "@/types/db";
 
 const LAST_VISIT_KEY = "peopengdan:lastVisit";
+const WATCHED_KEY = "peopengdan:watched";
+/** 무한정 쌓이지 않게 최근 N개만 남긴다. */
+const WATCHED_LIMIT = 3000;
+
+function loadWatched(): Set<string> {
+  try {
+    const raw = window.localStorage.getItem(WATCHED_KEY);
+    return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveWatched(ids: Set<string>) {
+  try {
+    const list = Array.from(ids).slice(-WATCHED_LIMIT);
+    window.localStorage.setItem(WATCHED_KEY, JSON.stringify(list));
+  } catch {
+    // 저장 실패해도 화면 표시는 이번 세션 동안 유지된다.
+  }
+}
 
 const personName = (slug: string) => PEOPLE.find((p) => p.slug === slug)?.name ?? slug;
 const categoryLabel = (slug: string) => CATEGORIES.find((c) => c.slug === slug)?.label ?? slug;
@@ -24,6 +45,7 @@ export function VideoGrid({
 }) {
   const [lastVisit, setLastVisit] = useState<number | null>(null);
   const [playing, setPlaying] = useState<VideoCard | null>(null);
+  const [watched, setWatched] = useState<Set<string>>(() => new Set());
 
   // 이전 방문 시각을 읽어 NEW 배지 기준으로 삼고, 곧바로 이번 방문 시각으로 갱신한다.
   // 배지는 이번 세션 동안 그대로 남고, 다음 방문 때 기준이 바뀐다.
@@ -35,7 +57,20 @@ export function VideoGrid({
     } catch {
       // 시크릿 모드 등에서 저장소 접근이 막히면 NEW 배지만 생략된다.
     }
+    setWatched(loadWatched());
   }, []);
+
+  // 로그인 여부와 무관하게 이 기기에서 본 영상만 기억한다 (ADR-011: 열람엔 로그인 마찰이 없어야 함).
+  function play(video: VideoCard) {
+    setPlaying(video);
+    setWatched((prev) => {
+      if (prev.has(video.id)) return prev;
+      const next = new Set(prev);
+      next.add(video.id);
+      saveWatched(next);
+      return next;
+    });
+  }
 
   return (
     <>
@@ -51,7 +86,8 @@ export function VideoGrid({
             isAdmin={isAdmin}
             variant={variant}
             isNew={variant === "main" && isNewSince(video.published_at, lastVisit)}
-            onPlay={() => setPlaying(video)}
+            watched={watched.has(video.id)}
+            onPlay={() => play(video)}
           />
         ))}
       </div>
@@ -66,12 +102,14 @@ function Card({
   isAdmin,
   variant,
   isNew,
+  watched,
   onPlay,
 }: {
   video: VideoCard;
   isAdmin: boolean;
   variant: "main" | "maybe" | "pinned" | "hidden";
   isNew: boolean;
+  watched: boolean;
   onPlay: () => void;
 }) {
   const [pending, startTransition] = useTransition();
@@ -148,11 +186,16 @@ function Card({
       )}
 
       <button className="card-open" onClick={onPlay}>
-        <div className="thumb">
+        <div className={watched ? "thumb thumb--watched" : "thumb"}>
           {/* YouTube CDN URL을 직접 참조한다. 서버로 프록시하지 않는다 (ADR-002). */}
           {video.thumbnail_url && (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img src={video.thumbnail_url} alt="" loading="lazy" decoding="async" />
+          )}
+          {watched && (
+            <span className="badge-watched" title="본 영상">
+              ✓ 봄
+            </span>
           )}
           {variant === "hidden" ? (
             published ? (
