@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="퍼스트펭귄단">
+  <defs>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E6F1F7"/>
+      <stop offset="0.5" stop-color="#B9D5E4"/>
+      <stop offset="1" stop-color="#5C8CA8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#water)"/>
+
+  <!-- 물에 뛰어드는 펭귄 실루엣 -->
+  <g transform="translate(256 250) rotate(18) translate(-256 -250)">
+    <ellipse cx="256" cy="250" rx="86" ry="122" fill="#12303F"/>
+    <ellipse cx="256" cy="262" rx="54" ry="98" fill="#F7FBFD"/>
+    <circle cx="256" cy="140" r="66" fill="#12303F"/>
+    <circle cx="236" cy="132" r="9" fill="#F7FBFD"/>
+    <circle cx="278" cy="132" r="9" fill="#F7FBFD"/>
+    <path d="M256 150 L300 168 L256 184 Z" fill="#D64B12"/>
+    <path d="M176 226 q-46 58 -22 122 q30 -40 40 -104 Z" fill="#12303F"/>
+    <path d="M336 226 q46 58 22 122 q-30 -40 -40 -104 Z" fill="#12303F"/>
+  </g>
+
+  <!-- 입수 파문 -->
+  <g fill="none" stroke="#12303F" stroke-opacity="0.28" stroke-linecap="round">
+    <path d="M108 400 q40 -22 80 0 t80 0 t80 0 t56 -12" stroke-width="14"/>
+    <path d="M132 442 q44 -20 88 0 t88 0 t76 -10" stroke-width="10" stroke-opacity="0.18"/>
+  </g>
+</svg>

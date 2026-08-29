@@ -1,0 +1,18 @@
+{
+  "name": "퍼스트펭귄단",
+  "short_name": "퍼펭단",
+  "description": "이용주 · 이선민 · 유영우 관련 유튜브 콘텐츠를 한 곳에 모아 보는 팬 아카이브.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E6F1F7",
+  "theme_color": "#E6F1F7",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

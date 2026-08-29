@@ -1,0 +1,19 @@
+node_modules/
+.next/
+out/
+build/
+.env
+.env.local
+.env*.local
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+Thumbs.db
+.vercel
+
+# 빌드 시 node_modules에서 복사되는 폰트
+public/fonts/
+
+# Claude Code 로컬 세션 정보 (개인용, 공유 저장소에 부적절)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock

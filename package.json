@@ -1,0 +1,35 @@
+{
+  "name": "peopengdan",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "predev": "node scripts/sync-fonts.mjs",
+    "dev": "next dev",
+    "prebuild": "node scripts/sync-fonts.mjs",
+    "build": "next build",
+    "start": "next start",
+    "sync:fonts": "node scripts/sync-fonts.mjs",
+    "resolve:channels": "tsx scripts/resolve-channels.ts",
+    "collect": "tsx scripts/collect.ts",
+    "rescore": "tsx scripts/rescore.ts",
+    "fix:orientation": "tsx scripts/fix-orientation.ts"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.112.4",
+    "next": "^16.3.3",
+    "pretendard": "^1.3.9",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.4.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "dotenv": "^17.4.2",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
+}
