@@ -29,6 +29,14 @@ config({ path: ".env.local" });
 /** 회차당 안전 상한. 하루 6회(4시간 주기) 돌려도 할당량의 66% 수준. */
 const QUOTA_BUDGET_PER_RUN = 1600;
 const SEARCH_PAGES_PER_KEYWORD = 2;
+/** 직전 실행 이후만 검색하되, 놓친 회차를 대비해 하루 정도 겹쳐서 본다. */
+const SEARCH_LOOKBACK_BUFFER_MS = 24 * 60 * 60 * 1000;
+
+/** 키워드를 한 번도 안 돌렸으면 undefined(전체 검색, 첫 백필용). */
+function publishedAfterFor(lastRunAt: string | null): string | undefined {
+  if (!lastRunAt) return undefined;
+  return new Date(new Date(lastRunAt).getTime() - SEARCH_LOOKBACK_BUFFER_MS).toISOString();
+}
 
 type ChannelLite = {
   id: string;
@@ -96,12 +104,13 @@ async function main() {
     if (!skipSearch) {
       const { data: keywords } = await db
         .from("search_keywords")
-        .select("id, keyword")
+        .select("id, keyword, last_run_at")
         .eq("is_active", true);
 
       for (const kw of keywords ?? []) {
         console.log("[검색] " + kw.keyword);
-        const ids = await yt.searchVideoIds(kw.keyword, SEARCH_PAGES_PER_KEYWORD);
+        const publishedAfter = publishedAfterFor(kw.last_run_at);
+        const ids = await yt.searchVideoIds(kw.keyword, SEARCH_PAGES_PER_KEYWORD, publishedAfter);
         const fresh = await filterUnknown(db, ids);
         console.log("  결과 " + ids.length + "건 중 신규 " + fresh.length + "건");
 

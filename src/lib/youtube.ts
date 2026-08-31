@@ -176,8 +176,12 @@ export class YouTubeClient {
   /**
    * 키워드로 유튜브 전체를 검색한다. 호출당 100유닛이므로 페이지 수를 반드시 제한할 것.
    * 반환값은 videoId 목록이며, 상세는 listVideos 로 따로 채운다(1유닛).
+   *
+   * publishedAfter 를 주면 그 시각 이후 게시물만 본다. 검색은 결과 개수와 무관하게
+   * 호출당 100유닛이 고정 비용이라, 매 회차 이미 훑은 과거 구간을 또 검색하는 걸
+   * 막아야 회차당 예산 안에서 키워드 전체를 다 돌 수 있다.
    */
-  async searchVideoIds(keyword: string, maxPages = 2): Promise<string[]> {
+  async searchVideoIds(keyword: string, maxPages = 2, publishedAfter?: string): Promise<string[]> {
     const ids: string[] = [];
     let pageToken: string | undefined;
 
@@ -189,6 +193,7 @@ export class YouTubeClient {
         order: "date",
         maxResults: "50",
       };
+      if (publishedAfter) params.publishedAfter = publishedAfter;
       if (pageToken) params.pageToken = pageToken;
 
       const data = await this.get<any>("search", params, QUOTA_COST.search);
