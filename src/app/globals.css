@@ -429,7 +429,7 @@ body {
   /* 기본값 stretch를 두면 같은 행의 세로(9:13) 카드 높이에 맞춰 가로(16:9)
      카드까지 늘어나 밑에 빈 공백이 생긴다. 각자 자기 높이만큼만 차지하게 한다. */
   align-items: start;
-  gap: 1.2rem;
+  gap: .45rem;
   padding: clamp(1.1rem, 3vw, 1.8rem);
 }
 .grid--maybe { opacity: .85; padding-top: .85rem; }
