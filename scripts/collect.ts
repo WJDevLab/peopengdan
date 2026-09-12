@@ -26,7 +26,7 @@ import type { PersonSlug, TrustTier } from "../src/lib/constants";
 
 config({ path: ".env.local" });
 
-/** 회차당 안전 상한. 하루 6회(4시간 주기) 돌려도 할당량의 66% 수준. */
+/** 하루 6회 실행 시 최대 9,600유닛. 수동 보충 수집은 별도 예산이 필요하다. */
 const QUOTA_BUDGET_PER_RUN = 1600;
 const SEARCH_PAGES_PER_KEYWORD = 2;
 /** 직전 실행 이후만 검색하되, 놓친 회차를 대비해 하루 정도 겹쳐서 본다. */
@@ -48,6 +48,9 @@ type ChannelLite = {
 
 async function main() {
   const skipSearch = process.argv.includes("--no-search");
+  const keywordIndex = process.argv.indexOf("--keyword");
+  const targetedKeyword = keywordIndex >= 0 ? process.argv[keywordIndex + 1] : undefined;
+  if (keywordIndex >= 0 && !targetedKeyword) throw new Error("--keyword 검색어가 필요합니다.");
 
   const db = createAdminClient();
   const yt = new YouTubeClient(
@@ -81,7 +84,7 @@ async function main() {
     }
 
     // ── 1) 채널 스캔 ─────────────────────────────────────────────
-    for (const channel of known.values()) {
+    for (const channel of targetedKeyword ? [] : known.values()) {
       console.log("[채널] " + channel.title);
       const meta = await yt.resolveChannel(channel.youtube_channel_id);
       if (!meta) {
@@ -102,15 +105,21 @@ async function main() {
 
     // ── 2) 키워드 검색 ───────────────────────────────────────────
     if (!skipSearch) {
-      const { data: keywords } = await db
+      const { data: scheduledKeywords, error: keywordError } = await db
         .from("search_keywords")
         .select("id, keyword, last_run_at")
-        .eq("is_active", true);
+        .eq("is_active", true)
+        .order("last_run_at", { ascending: true, nullsFirst: true });
+      if (keywordError) throw keywordError;
+      const keywords = targetedKeyword
+        ? [{ id: null, keyword: targetedKeyword, last_run_at: null }]
+        : scheduledKeywords;
 
       for (const kw of keywords ?? []) {
         console.log("[검색] " + kw.keyword);
         const publishedAfter = publishedAfterFor(kw.last_run_at);
-        const ids = await yt.searchVideoIds(kw.keyword, SEARCH_PAGES_PER_KEYWORD, publishedAfter);
+        const ids = await yt.searchVideoIds(kw.keyword, SEARCH_PAGES_PER_KEYWORD, publishedAfter,
+          targetedKeyword && process.argv.includes("--relevance") ? "relevance" : "date");
         const fresh = await filterUnknown(db, ids);
         console.log("  결과 " + ids.length + "건 중 신규 " + fresh.length + "건");
 
@@ -120,7 +129,7 @@ async function main() {
           created += await persist(db, videos, known, "keyword_search");
         }
 
-        await db
+        if (kw.id) await db
           .from("search_keywords")
           .update({ last_run_at: new Date().toISOString() })
           .eq("id", kw.id);
@@ -149,6 +158,7 @@ async function main() {
   console.log(
     "\n완료 — 조회 " + seen + "건 / 신규 " + created + "건 / 할당량 " + yt.quota.used + " 유닛",
   );
+  if (failure) process.exitCode = 1;
 }
 
 /**
@@ -169,6 +179,8 @@ async function filterUnknown(db: ReturnType<typeof createAdminClient>, ids: stri
       db.from("videos").select("youtube_video_id").in("youtube_video_id", chunk),
       db.from("blocked_videos").select("youtube_video_id").in("youtube_video_id", chunk),
     ]);
+    if (existing.error) throw existing.error;
+    if (blocked.error) throw blocked.error;
 
     for (const row of existing.data ?? []) skip.add(row.youtube_video_id);
     for (const row of blocked.data ?? []) skip.add(row.youtube_video_id);

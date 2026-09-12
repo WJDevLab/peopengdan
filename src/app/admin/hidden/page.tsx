@@ -58,7 +58,7 @@ export default async function HiddenVideosPage({ searchParams }: { searchParams:
           <p>조건에 걸리는 숨김 영상이 없습니다.</p>
         </div>
       ) : (
-        <InfiniteHiddenVideoList initialVideos={videos} filters={filters} initialCount={videos.length} />
+        <InfiniteHiddenVideoList key={JSON.stringify(filters)} initialVideos={videos} filters={filters} initialCount={videos.length} />
       )}
     </main>
   );

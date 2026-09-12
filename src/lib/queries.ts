@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createPublicClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 import { resolveSort, type PersonSlug } from "@/lib/constants";
 import type { CollectionRunRow, VideoCard, VideoStatusFilter } from "@/types/db";
 
@@ -38,6 +40,7 @@ export async function fetchFilterChannels() {
 }
 
 const PAGE_SIZE = 48;
+const searchTerm = (value: string) => value.trim().slice(0, 120).replace(/[%,()."\\]/g, "");
 
 const SELECT_BASE =
   "id, youtube_video_id, title, published_at, duration_seconds, is_short, thumbnail_url," +
@@ -86,12 +89,13 @@ export async function fetchVideos(
   else if (filters.orientation === "wide") query = query.eq("is_short", false);
 
   if (filters.q?.trim()) {
-    const term = filters.q.trim().replace(/[%,]/g, "");
+    const term = searchTerm(filters.q);
     if (term) query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%`);
   }
 
   const { data, error } = await query
     .order(sort.column, { ascending: sort.ascending, nullsFirst: false })
+    .order("id", { ascending: true })
     .range(offset, offset + PAGE_SIZE - 1);
 
   if (error) throw new Error("영상 조회 실패: " + error.message);
@@ -147,7 +151,7 @@ export async function countVideos(
   else if (filters.orientation === "wide") query = query.eq("is_short", false);
 
   if (filters.q?.trim()) {
-    const term = filters.q.trim().replace(/[%,]/g, "");
+    const term = searchTerm(filters.q);
     if (term) query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%`);
   }
 
@@ -181,12 +185,13 @@ export async function fetchHiddenVideos(filters: VideoFilters, offset = 0): Prom
   if (filters.orientation === "vertical") query = query.eq("is_short", true);
   else if (filters.orientation === "wide") query = query.eq("is_short", false);
   if (filters.q?.trim()) {
-    const term = filters.q.trim().replace(/[%,]/g, "");
+    const term = searchTerm(filters.q);
     if (term) query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%`);
   }
 
   const { data, error } = await query
     .order(sort.column, { ascending: sort.ascending, nullsFirst: false })
+    .order("id", { ascending: true })
     .range(offset, offset + PAGE_SIZE - 1);
   if (error) throw new Error("숨김 영상 조회 실패: " + error.message);
 
@@ -230,7 +235,7 @@ export async function countHiddenVideos(filters: VideoFilters): Promise<number> 
   if (filters.orientation === "vertical") query = query.eq("is_short", true);
   else if (filters.orientation === "wide") query = query.eq("is_short", false);
   if (filters.q?.trim()) {
-    const term = filters.q.trim().replace(/[%,]/g, "");
+    const term = searchTerm(filters.q);
     if (term) query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%`);
   }
 
@@ -246,8 +251,9 @@ export async function countHiddenVideos(filters: VideoFilters): Promise<number> 
  * 화면에 안 보이는 hidden 영상까지 들어가서 "수집된 영상 284편인데
  * 이용주 790편" 같은 앞뒤 안 맞는 숫자가 나온다.
  */
-export async function fetchVideoStats() {
-  const supabase = await createClient();
+export const fetchVideoStats = unstable_cache(async function fetchVideoStats() {
+  // Only public aggregate counts are shared. Never cache a cookie-bound client or viewer.
+  const supabase = createPublicClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false, autoRefreshToken: false } });
 
   // 화면에 실제로 나오는 두 단계(published + maybe)만 센다.
   const SHOWN = ["published", "maybe"];
@@ -281,7 +287,7 @@ export async function fetchVideoStats() {
     wide: wide.count ?? 0,
     vertical: vertical.count ?? 0,
   };
-}
+}, ["public-video-stats-v1"], { revalidate: 60 });
 
 /** DB가 아직 비어 있는지. 첫 실행 안내 화면을 띄울지 판단하는 데 쓴다. */
 export async function isDatabaseEmpty(): Promise<boolean> {

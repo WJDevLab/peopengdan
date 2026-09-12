@@ -116,6 +116,8 @@ export async function publishHiddenVideo(id: string): Promise<ActionResult> {
 
 /** 숨김 영상 목록 무한 스크롤. */
 export async function loadMoreHiddenVideos(filters: VideoFilters, offset: number) {
+  await requireAdmin();
+  if (!Number.isSafeInteger(offset) || offset < 0) throw new Error("잘못된 페이지입니다.");
   return fetchHiddenVideos(filters, offset);
 }
 
@@ -131,6 +133,7 @@ export async function loadMoreVideos(
   sureOffset: number,
   unsureOffset: number,
 ): Promise<{ sure: VideoCard[]; unsure: VideoCard[] }> {
+  if (![sureOffset, unsureOffset].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error("잘못된 페이지입니다.");
   const sure = await fetchVideos(filters, "published", false, sureOffset);
   let unsure: VideoCard[] = [];
   if (sure.length === 0) {

@@ -78,7 +78,7 @@ export class YouTubeClient {
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
     url.searchParams.set("key", this.apiKey);
 
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(20_000) });
     if (!res.ok) {
       const body = await res.text();
       throw new Error(
@@ -181,7 +181,7 @@ export class YouTubeClient {
    * 호출당 100유닛이 고정 비용이라, 매 회차 이미 훑은 과거 구간을 또 검색하는 걸
    * 막아야 회차당 예산 안에서 키워드 전체를 다 돌 수 있다.
    */
-  async searchVideoIds(keyword: string, maxPages = 2, publishedAfter?: string): Promise<string[]> {
+  async searchVideoIds(keyword: string, maxPages = 2, publishedAfter?: string, order: "date" | "relevance" = "date"): Promise<string[]> {
     const ids: string[] = [];
     let pageToken: string | undefined;
 
@@ -190,7 +190,7 @@ export class YouTubeClient {
         part: "id",
         q: keyword,
         type: "video",
-        order: "date",
+        order,
         maxResults: "50",
       };
       if (publishedAfter) params.publishedAfter = publishedAfter;

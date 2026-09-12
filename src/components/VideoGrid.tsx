@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CATEGORIES, PEOPLE } from "@/lib/constants";
 import { formatDuration, formatRelative, formatViews, isNewSince } from "@/lib/format";
@@ -46,6 +46,33 @@ export function VideoGrid({
   const [lastVisit, setLastVisit] = useState<number | null>(null);
   const [playing, setPlaying] = useState<VideoCard | null>(null);
   const [watched, setWatched] = useState<Set<string>>(() => new Set());
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Small grid tracks let each card end independently of its taller neighbours.
+  // Observe cards as well as the container: fonts, wrapping and resizing change heights.
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    let frame = 0;
+    const layout = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+        const cards = Array.from(grid.children) as HTMLElement[];
+        const spans = cards.map(card => Math.ceil(card.getBoundingClientRect().height + gap));
+        cards.forEach((card, index) => {
+          const span = spans[index];
+          card.style.gridRowEnd = `span ${span}`;
+        });
+        grid.dataset.masonry = "ready";
+      });
+    };
+    const observer = new ResizeObserver(layout);
+    observer.observe(grid);
+    for (const card of Array.from(grid.children)) observer.observe(card);
+    layout();
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); };
+  }, [videos]);
 
   // 이전 방문 시각을 읽어 NEW 배지 기준으로 삼고, 곧바로 이번 방문 시각으로 갱신한다.
   // 배지는 이번 세션 동안 그대로 남고, 다음 방문 때 기준이 바뀐다.
@@ -75,6 +102,7 @@ export function VideoGrid({
   return (
     <>
       <div
+        ref={gridRef}
         className={
           variant === "maybe" ? "grid grid--maybe" : variant === "pinned" ? "grid grid--pinned" : "grid"
         }

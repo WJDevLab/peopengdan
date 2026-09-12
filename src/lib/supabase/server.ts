@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 /**
  * 서버 컴포넌트 · 라우트 핸들러용 클라이언트.
@@ -32,7 +33,7 @@ export async function createClient() {
 }
 
 /** 현재 로그인 사용자와 프로필(역할 포함)을 함께 가져온다. */
-export async function getViewer() {
+export const getViewer = cache(async function getViewer() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -49,4 +50,4 @@ export async function getViewer() {
     .single();
 
   return { user, profile, isAdmin: profile?.role === "admin" };
-}
+});

@@ -25,7 +25,8 @@ function hrefWith(month: string, people: string[], patch: { month?: string; peop
 
 export default async function SchedulePage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
-  const month = (one(sp.month) ?? currentMonth()).slice(0, 7);
+  const requestedMonth = one(sp.month) ?? "";
+  const month = /^(19|20|21)\d{2}-(0[1-9]|1[0-2])$/.test(requestedMonth) ? requestedMonth : currentMonth();
   const selected = (one(sp.people) ?? "")
     .split(",")
     .map((s) => s.trim())

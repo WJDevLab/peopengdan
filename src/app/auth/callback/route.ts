@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
+  const requestedNext = searchParams.get("next") ?? "/";
+  const next = requestedNext.startsWith("/") && !requestedNext.startsWith("//") && !requestedNext.includes("\\") ? requestedNext : "/";
 
   if (!code) {
     return NextResponse.redirect(`${origin}/?auth_error=missing_code`);
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return NextResponse.redirect(`${origin}/?auth_error=${encodeURIComponent(error.message)}`);
+    return NextResponse.redirect(`${origin}/?auth_error=login_failed`);
   }
 
   return NextResponse.redirect(`${origin}${next}`);

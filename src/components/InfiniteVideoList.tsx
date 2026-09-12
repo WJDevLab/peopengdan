@@ -34,6 +34,7 @@ export function InfiniteVideoList({
   const [videos, setVideos] = useState(initialVideos);
   const [done, setDone] = useState(initialSureCount === 0 && initialUnsureCount === 0);
   const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [, startTransition] = useTransition();
   const sureOffset = useRef(initialSureCount);
   const unsureOffset = useRef(initialUnsureCount);
@@ -54,6 +55,7 @@ export function InfiniteVideoList({
     if (loadingRef.current || doneRef.current) return;
     loadingRef.current = true;
     setPending(true);
+    setFailed(false);
 
     startTransition(async () => {
       try {
@@ -66,7 +68,12 @@ export function InfiniteVideoList({
           setDone(true);
           return;
         }
-        setVideos((prev) => [...prev, ...sure, ...unsure]);
+        setVideos((prev) => {
+          const seen = new Set(prev.map(v => v.id));
+          return [...prev, ...[...sure, ...unsure].filter(v => !seen.has(v.id))];
+        });
+      } catch {
+        setFailed(true);
       } finally {
         loadingRef.current = false;
         setPending(false);
@@ -91,6 +98,7 @@ export function InfiniteVideoList({
       <VideoGrid videos={videos} isAdmin={isAdmin} />
       {!done && (
         <div className="grid-sentinel">
+          {failed && <button className="btn" onClick={loadMore} disabled={pending}>불러오지 못했어요 · 다시 시도</button>}
           <span className={pending ? "grid-loading" : "grid-loading grid-loading--idle"}>
             {pending ? "불러오는 중…" : ""}
           </span>

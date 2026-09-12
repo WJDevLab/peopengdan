@@ -72,7 +72,8 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     channels = channelsRes;
     isAdmin = viewer.isAdmin;
   } catch (err) {
-    setupError = (err as Error).message;
+    console.error("Video page load failed", err instanceof Error ? err.name : "UnknownError");
+    setupError = "영상을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
   }
 
   if (setupError) return <SetupNotice message={setupError} />;
@@ -121,6 +122,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           )}
           {videos.length > 0 && (
             <InfiniteVideoList
+              key={JSON.stringify(filters)}
               initialVideos={videos}
               filters={filters}
               isAdmin={isAdmin}
@@ -174,12 +176,9 @@ function SetupNotice({ message }: { message: string }) {
         <span className="glyph" aria-hidden="true">
           🧊
         </span>
-        <h2>아직 데이터베이스에 연결되지 않았습니다</h2>
-        <p>
-          <code>.env.local</code> 에 Supabase 주소와 키를 넣고,{" "}
-          <code>supabase/migrations</code> 의 SQL을 순서대로 실행하세요.
-        </p>
-        <p style={{ opacity: 0.7, fontSize: ".8rem" }}>{message}</p>
+        <h2>잠시 쉬어 가고 있어요</h2>
+        <p>{message}</p>
+        <a className="btn" href="/">다시 불러오기</a>
       </div>
     </main>
   );

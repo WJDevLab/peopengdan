@@ -18,6 +18,10 @@ const SELECT =
 export default async function BoardPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const category = one(sp.category) ?? "all";
+  const requestedPage = Number(one(sp.page) ?? 1);
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? Math.min(requestedPage, 10000) : 1;
+  const offset = (page - 1) * 50;
+  const pageHref = (n: number) => `/board?${new URLSearchParams({ category, page: String(n) })}`;
 
   const db = await createClient();
   const { user } = await getViewer();
@@ -30,7 +34,7 @@ export default async function BoardPage({ searchParams }: { searchParams: Search
 
   const [notices, normal] = await Promise.all([
     noticesQuery,
-    normalQuery.order("is_pinned", { ascending: false }).order("created_at", { ascending: false }).limit(50),
+    normalQuery.order("is_pinned", { ascending: false }).order("created_at", { ascending: false }).order("id").range(offset, offset + 49),
   ]);
 
   const noticeRows = (notices.data ?? []) as unknown as PostListItem[];
@@ -99,13 +103,18 @@ export default async function BoardPage({ searchParams }: { searchParams: Search
                 <Row key={p.id} post={p} number="—" />
               ))}
               {rows.map((p, i) => (
-                <Row key={p.id} post={p} number={p.is_pinned ? "—" : String(total - i)} />
+                <Row key={p.id} post={p} number={p.is_pinned ? "—" : String(total - offset - i)} />
               ))}
             </tbody>
           </table>
           </div>
         </div>
       )}
+      {(page > 1 || offset + 50 < total) && <nav className="grid-sentinel" aria-label="게시판 페이지">
+        {page > 1 && <Link className="btn btn--ghost" href={pageHref(page - 1)}>이전</Link>}
+        <span>{page} 페이지</span>
+        {offset + 50 < total && <Link className="btn btn--ghost" href={pageHref(page + 1)}>다음</Link>}
+      </nav>}
     </main>
   );
 }

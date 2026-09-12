@@ -426,12 +426,11 @@ body {
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(212px, 1fr));
-  /* 기본값 stretch를 두면 같은 행의 세로(9:13) 카드 높이에 맞춰 가로(16:9)
-     카드까지 늘어나 밑에 빈 공백이 생긴다. 각자 자기 높이만큼만 차지하게 한다. */
   align-items: start;
   gap: .45rem;
   padding: clamp(1.1rem, 3vw, 1.8rem);
 }
+.grid[data-masonry="ready"] { grid-auto-rows: 1px; grid-auto-flow: row dense; row-gap: 0; }
 .grid--maybe { opacity: .85; padding-top: .85rem; }
 
 /* 무한 스크롤 감지용. 화면에 걸리면 다음 묶음을 이어 불러온다. */
