@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
+import { NavProgress } from "@/components/NavProgress";
 import { Sidebar } from "@/components/Sidebar";
 import "./globals.css";
 
@@ -53,6 +55,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        {/* useSearchParams 를 쓰므로 Suspense 로 감싼다. */}
+        <Suspense fallback={null}>
+          <NavProgress />
+        </Suspense>
         <div className="app">
           <Sidebar />
           <div className="main">{children}</div>
