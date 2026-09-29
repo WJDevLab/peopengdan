@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient, getViewer } from "@/lib/supabase/server";
 import { AuthButton } from "./AuthButton";
 import { Nav } from "./Nav";
+import { SideAccount } from "./SideAccount";
 
 /** 좌측 사이드바. 로고 · 로그인 카드 · 메뉴 (ADR-017). */
 export async function Sidebar() {
@@ -50,7 +51,7 @@ export async function Sidebar() {
       </Link>
       <p className="brand-sub">First Penguin Archive</p>
 
-      <div className="side-account">
+      <SideAccount initial={signedIn ? (name?.charAt(0) ?? "나") : null}>
         {name ? (
           <div className="who">
             <span className="avatar" aria-hidden="true">
@@ -63,7 +64,7 @@ export async function Sidebar() {
         )}
 
         <AuthButton signedIn={signedIn} isAdmin={viewer.isAdmin} />
-      </div>
+      </SideAccount>
 
       <Nav counts={counts} isAdmin={viewer.isAdmin} />
 

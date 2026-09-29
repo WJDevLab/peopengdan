@@ -284,7 +284,7 @@ function PlayerModal({ video, onClose }: { video: VideoCard; onClose: () => void
       onClick={onClose}
     >
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-player">
+        <div className={video.is_short ? "modal-player modal-player--short" : "modal-player"}>
           {/* 재생은 YouTube 임베드 플레이어로만. 조회수와 광고 수익은 원저작자에게 간다. */}
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${video.youtube_video_id}?autoplay=1&rel=0`}

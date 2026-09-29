@@ -29,7 +29,7 @@ export function AuthButton({ signedIn, isAdmin }: Props) {
   }
 
   return (
-    <div style={{ display: "flex", gap: ".35rem", alignItems: "center", flexWrap: "wrap" }}>
+    <div className="auth-actions">
       {isAdmin && <span className="role-badge">ADMIN</span>}
       <Link className="btn-mini" href="/me">
         내 정보

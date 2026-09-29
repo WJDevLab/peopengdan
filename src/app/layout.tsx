@@ -30,6 +30,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // 노치·홈 인디케이터 영역까지 그리고, 상단 바·하단 탭바가 safe-area 여백으로 피한다.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#E6F1F7" },
     { media: "(prefers-color-scheme: dark)", color: "#0B1E2A" },

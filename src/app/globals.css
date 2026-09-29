@@ -183,6 +183,9 @@ body {
   white-space: nowrap;
 }
 .side-account .hint { font-size: .76rem; color: var(--muted); line-height: 1.45; }
+.side-account-panel { display: flex; flex-direction: column; gap: .6rem; min-width: 0; }
+.account-toggle { display: none; }
+.auth-actions { display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; }
 
 .nav { display: flex; flex-direction: column; gap: .15rem; }
 .nav-item {
@@ -259,24 +262,70 @@ body {
     justify-content: space-between;
     gap: .5rem;
     overflow: visible;
-    padding: .55rem .7rem;
+    min-height: 3.25rem;
+    padding: calc(.45rem + env(safe-area-inset-top)) max(.9rem, env(safe-area-inset-right)) .45rem max(.9rem, env(safe-area-inset-left));
     border-right: 0;
     border-bottom: 1px solid var(--line);
     backdrop-filter: none;
-    background: var(--shell);
+    /* 블러를 끈 대신 불투명도를 올려 아래로 지나가는 카드가 비쳐 보이지 않게 한다. */
+    background: color-mix(in srgb, var(--water-top) 94%, transparent);
   }
   .brand-sub, .side-foot, .side-account .hint { display: none; }
-  .brand { font-size: 1.1rem; padding: 0 0 0 .1rem; }
+  .brand { font-size: 1.15rem; padding: 0; }
+
+  /* 상단 바의 계정 영역은 카드 테두리 없이 버튼만 둔다. */
   .side-account {
+    position: relative;
     flex-direction: row;
     align-items: center;
-    min-width: 0;
-    flex-shrink: 1;
-    padding: .3rem .4rem .3rem .3rem;
-    gap: .4rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    flex-shrink: 0;
   }
-  .side-account .who { min-width: 0; }
-  .side-account .name { max-width: 22vw; }
+  .side-account .btn { padding: .42rem .9rem; font-size: .8rem; }
+
+  /* 로그인 상태: 아바타 하나로 접고, 누르면 아래로 메뉴가 열린다. */
+  .account-toggle {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+  }
+  .account-toggle .avatar { width: 34px; height: 34px; font-size: .85rem; }
+  .account-toggle[aria-expanded="true"] .avatar { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .side-account[data-collapsible="true"] .side-account-panel { display: none; }
+  .side-account[data-open="true"] .side-account-panel {
+    display: flex;
+    position: absolute;
+    top: calc(100% + .5rem);
+    right: 0;
+    z-index: 40;
+    width: min(240px, calc(100vw - 1.5rem));
+    padding: .8rem;
+    gap: .7rem;
+    background: var(--surface-solid);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(2, 20, 30, .28);
+  }
+  .side-account .name { max-width: none; font-size: .92rem; }
+  .side-account[data-open="true"] .auth-actions { flex-direction: column; align-items: stretch; gap: .3rem; }
+  .side-account[data-open="true"] .auth-actions .role-badge { align-self: flex-start; }
+  .side-account[data-open="true"] .auth-actions .btn-mini {
+    padding: .7rem .8rem;
+    font-size: .88rem;
+    text-align: left;
+    border-radius: 9px;
+    color: var(--text);
+    text-decoration: none;
+  }
 
   /* 메뉴는 하단 고정 탭바. 엄지로 닿기 쉬운 자리에 항상 보이게 둔다. */
   .nav {
@@ -287,26 +336,52 @@ body {
     z-index: 30;
     flex-direction: row;
     justify-content: space-around;
-    gap: 0;
-    padding: .3rem .2rem calc(.3rem + env(safe-area-inset-bottom));
+    gap: .25rem;
+    padding: .35rem max(.4rem, env(safe-area-inset-right)) calc(.35rem + env(safe-area-inset-bottom)) max(.4rem, env(safe-area-inset-left));
     background: var(--shell);
     backdrop-filter: blur(14px);
     border-top: 1px solid var(--line);
   }
   .nav-item {
     flex: 1 1 0;
+    min-width: 0;
+    min-height: 3rem;
     flex-direction: column;
     justify-content: center;
-    gap: .18rem;
-    padding: .3rem .2rem;
-    border-radius: 10px;
-    font-size: .64rem;
+    gap: .2rem;
+    padding: .3rem .15rem;
+    border-radius: 12px;
+    font-size: .68rem;
     white-space: nowrap;
+  }
+  /* 탭바는 꽉 찬 주황 블록 대신 옅은 배경 + 주황 글자로. 손가락 아래서 덜 무겁다. */
+  .nav-item[data-active="true"] {
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
   }
   .nav-item .count { display: none; }
 
   /* 하단 탭바에 본문이 가리지 않도록 여백을 둔다. */
-  .main { padding-bottom: calc(3.6rem + env(safe-area-inset-bottom)); }
+  .main { padding-bottom: calc(4.2rem + env(safe-area-inset-bottom)); }
+
+  /* 본문 헤더: 상단 바 아래에 또 붙으면 가려지고 자리만 먹는다. 스크롤과 함께 흘려보낸다. */
+  .page-head {
+    position: static;
+    gap: .3rem .6rem;
+    padding: .9rem 1rem .75rem;
+    background: transparent;
+    backdrop-filter: none;
+  }
+  .page-head h1 { font-size: 1.25rem; }
+  .page-head .sub { font-size: .76rem; }
+  .page-head .btn { padding: .45rem 1rem; }
+
+  /* iOS 사파리는 16px 미만 입력칸에 포커스하면 화면을 확대해버린다. */
+  .input, .textarea, .select, .search { font-size: 16px; }
+
+  /* 작은 버튼은 손가락으로 누를 수 있는 크기까지 키운다. */
+  .btn-mini { padding: .4rem .7rem; font-size: .78rem; border-radius: 7px; }
+  .btn { min-height: 2.25rem; }
 }
 
 /* ── 컨트롤 ────────────────────────────────────────────── */
@@ -383,6 +458,8 @@ body {
 }
 
 .filter-sep { width: 1px; height: 17px; background: var(--line); margin: 0 .45rem; }
+.filters-total { margin-left: auto; }
+.cal-people { display: contents; }
 
 .chip {
   font-family: inherit;
@@ -1346,6 +1423,143 @@ body {
   align-items: start;
 }
 .privacy-list p { margin: 0; font-size: .85rem; line-height: 1.6; color: var(--muted); }
+
+/* ═══════════════════════════════════════════════════════════
+   휴대폰 폭 (≤700px)
+   원칙: 줄바꿈으로 찌그러뜨리지 말고, 한 줄로 두되 옆으로 밀어서 본다.
+   누르는 것은 전부 손가락 크기(높이 36px 이상)로.
+   ═══════════════════════════════════════════════════════════ */
+body { -webkit-tap-highlight-color: transparent; }
+
+@media (max-width: 700px) {
+  /* 가로로 밀어 보는 줄. 스크롤바는 숨기고 양끝을 화면 가장자리까지 뺀다. */
+  .stats,
+  .filters,
+  .filter-panel .filter-row:not(form),
+  .cal-people {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .stats::-webkit-scrollbar,
+  .filters::-webkit-scrollbar,
+  .filter-panel .filter-row::-webkit-scrollbar,
+  .cal-people::-webkit-scrollbar { display: none; }
+
+  /* 현황판: 2×3 큰 박스 → 한 줄 알약. 첫 화면을 영상에 양보한다. */
+  .stats {
+    display: flex;
+    gap: .4rem;
+    margin: 0;
+    padding: 0 1rem .2rem;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+  }
+  .stat {
+    flex: none;
+    display: flex;
+    align-items: baseline;
+    gap: .4rem;
+    padding: .42rem .8rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+  .stat dt { margin: 0; font-size: .74rem; white-space: nowrap; }
+  .stat dd { font-size: .95rem; white-space: nowrap; }
+  .stat dd small { font-size: .66rem; margin-left: .12rem; }
+
+  /* 정렬 · 유형 · 필터 버튼: 각각 한 줄을 꽉 채워 같은 폭으로 나눈다. */
+  .filter-top {
+    display: grid;
+    gap: .5rem;
+    padding: .75rem 1rem;
+  }
+  .filter-top-right {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: .5rem;
+    margin-left: 0;
+  }
+  .seg { min-width: 0; }
+  .seg-opt {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+    padding: .48rem .3rem;
+    font-size: .82rem;
+  }
+  .filter-toggle { padding: .48rem .85rem; white-space: nowrap; }
+  .filter-result { padding: .5rem 1rem; }
+
+  /* 필터 패널: 검색창은 한 줄 전체, 칩 줄은 옆으로 밀기. */
+  .filter-panel { gap: .65rem; padding: .3rem 0 1rem; }
+  .filter-panel .filter-row { padding: 0 1rem; gap: .4rem; }
+  .filter-panel form.filter-row { flex-wrap: nowrap; }
+  .filter-panel form.filter-row .search { flex: 1 1 auto; min-width: 0; padding: .5rem .9rem; }
+  .filter-panel form.filter-row .btn { flex: none; }
+  .filter-label { flex: none; min-width: 2.2rem; }
+  .filter-row .chip,
+  .filters .chip,
+  .cal-people .chip {
+    flex: none;
+    padding: .42rem .85rem;
+    font-size: .82rem;
+  }
+
+  /* 영상 그리드는 한 줄 1개 그대로, 테두리 여백만 줄인다. */
+  .grid { padding: .9rem 1rem 1rem; gap: .6rem; }
+  .pinned-zone { margin: .3rem 1rem 0; padding: .8rem .7rem 1rem; }
+  .card-title { font-size: 1rem; }
+  /* 어드민 버튼은 카드 위에서 손가락으로 누르기 쉽게 키운다. */
+  .btn-icon { width: 34px; height: 34px; }
+
+  /* 재생 창: 화면 폭을 꽉 채운다. 세로 숏츠는 세로로 크게. */
+  .modal-backdrop { padding: 0; place-items: center; }
+  .modal { width: 100%; max-height: 100dvh; border-radius: 0; border-left: 0; border-right: 0; }
+  .modal-player { border-radius: 0; }
+  .modal-player--short { aspect-ratio: auto; height: min(68dvh, 160vw); }
+  .modal-body { padding: 1rem 1rem calc(1.1rem + env(safe-area-inset-bottom)); }
+  .modal-body h2 { font-size: 1.02rem; }
+  .modal-actions { justify-content: space-between; align-items: center; }
+  .modal-actions .btn { padding: .5rem 1.4rem; }
+
+  /* 게시판 말머리: 한 줄 가로 스크롤. 글 수는 끝으로 밀리지 않게 앞 라벨 옆에 둔다. */
+  .filters { padding: .7rem 1rem; gap: .4rem; }
+  .filters > .filter-label:first-child { display: none; }
+  .filters-total { flex: none; padding-left: .4rem; color: var(--muted); font-weight: var(--w-body); }
+  .list-wrap { padding: .9rem 1rem; }
+  .list tbody tr { padding: .9rem 1rem; }
+  .list .cell-title a { font-size: 1rem; }
+
+  /* 달력: 월 이동 줄과 인물 줄을 나눈다. */
+  .cal-bar { padding: .7rem 1rem; gap: .5rem; }
+  .cal-bar .filter-sep { display: none; }
+  .cal-title { flex: 1; min-width: 0; text-align: center; font-size: 1.05rem; }
+  .cal-people { display: flex; align-items: center; gap: .4rem; flex: 1 0 100%; }
+  .calendar { padding: .9rem .6rem; }
+  .cal-dow { padding: .4rem .1rem; }
+  .cal-cell { padding: .25rem .15rem .3rem; }
+  .cal-date { padding: 0 .15rem .1rem; }
+  .evt { padding: .14rem .2rem; }
+  .cal-legend { padding: .8rem 1rem 0; }
+
+  /* 게시글 · 글쓰기 · 댓글: 가장자리 여백을 줄여 글 폭을 확보한다. */
+  .post-wrap { padding: .9rem .75rem 3rem; gap: .75rem; }
+  .post-head { padding: 1rem 1rem .85rem; }
+  .post-title { font-size: 1.22rem; }
+  .post-body { padding: 1.15rem 1rem; font-size: 1rem; line-height: 1.8; }
+  .post-foot { padding: .75rem 1rem; }
+  .comments { padding: 1rem; }
+  .compose-wrap { padding: .9rem .75rem 3rem; }
+  .compose { padding: 1.1rem 1rem; }
+  .compose-foot .btn { flex: 1 1 100%; justify-content: center; margin-left: 0; padding: .7rem; }
+  .comment-form .btn { align-self: stretch; justify-content: center; }
+  .form { padding: 1rem; }
+  .radio-chips label { padding: .45rem .9rem; }
+  .auth-wrap { padding: 1.2rem .75rem; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: .01ms !important; animation-duration: .01ms !important; }

@@ -71,7 +71,7 @@ export default async function BoardPage({ searchParams }: { searchParams: Search
             {c.label}
           </Link>
         ))}
-        <span className="filter-label" style={{ marginLeft: "auto" }}>
+        <span className="filter-label filters-total">
           전체 {total.toLocaleString("ko-KR")}개
         </span>
       </div>

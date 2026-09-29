@@ -109,21 +109,23 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
         </Link>
 
         <span className="filter-sep" aria-hidden="true" />
-        <span className="filter-label">인물</span>
+        <div className="cal-people">
+          <span className="filter-label">인물</span>
 
-        <Link className="chip" data-active={selected.length === 0} href={hrefWith(month, [], {})}>
-          전체
-        </Link>
-        {PEOPLE.map((p) => {
-          const on = selected.includes(p.slug);
-          // 눌러서 켜고 끄는 다중 선택. 여러 명을 겹쳐 볼 수 있다.
-          const next = on ? selected.filter((s) => s !== p.slug) : [...selected, p.slug];
-          return (
-            <Link key={p.slug} className="chip" data-active={on} href={hrefWith(month, selected, { people: next })}>
-              {p.name}
-            </Link>
-          );
-        })}
+          <Link className="chip" data-active={selected.length === 0} href={hrefWith(month, [], {})}>
+            전체
+          </Link>
+          {PEOPLE.map((p) => {
+            const on = selected.includes(p.slug);
+            // 눌러서 켜고 끄는 다중 선택. 여러 명을 겹쳐 볼 수 있다.
+            const next = on ? selected.filter((s) => s !== p.slug) : [...selected, p.slug];
+            return (
+              <Link key={p.slug} className="chip" data-active={on} href={hrefWith(month, selected, { people: next })}>
+                {p.name}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {loadError ? (
