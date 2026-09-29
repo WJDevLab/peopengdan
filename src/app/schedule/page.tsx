@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Calendar } from "@/components/schedule/Calendar";
-import { PEOPLE, type PersonSlug } from "@/lib/constants";
+import { PEOPLE, SCHEDULE_READY, type PersonSlug } from "@/lib/constants";
 import { addMonths, currentMonth, monthGrid, monthLabel } from "@/lib/date";
 import { createClient, getViewer } from "@/lib/supabase/server";
 import type { EventItem } from "@/types/db";
@@ -24,6 +24,8 @@ function hrefWith(month: string, people: string[], patch: { month?: string; peop
 }
 
 export default async function SchedulePage({ searchParams }: { searchParams: SearchParams }) {
+  if (!SCHEDULE_READY) return <ComingSoon />;
+
   const sp = await searchParams;
   const requestedMonth = one(sp.month) ?? "";
   const month = /^(19|20|21)\d{2}-(0[1-9]|1[0-2])$/.test(requestedMonth) ? requestedMonth : currentMonth();
@@ -147,6 +149,26 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
           )}
         </>
       )}
+    </main>
+  );
+}
+
+function ComingSoon() {
+  return (
+    <main className="page">
+      <div className="page-head">
+        <h1>일정</h1>
+      </div>
+      <div className="empty empty--soon">
+        <span className="glyph" aria-hidden="true">
+          🗓️
+        </span>
+        <h2>일정은 아직 준비 중이에요</h2>
+        <p>펭귄들의 방송 · 공연 · 업로드 일정을 한눈에 볼 수 있도록 다듬고 있어요. 조금만 기다려 주세요!</p>
+        <Link className="btn" href="/">
+          영상 보러 가기
+        </Link>
+      </div>
     </main>
   );
 }

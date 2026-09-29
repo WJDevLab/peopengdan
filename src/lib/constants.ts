@@ -104,6 +104,9 @@ export function resolveSort(input: string | undefined) {
   return SORTS.find((s) => s.slug === input) ?? SORTS[0];
 }
 
+/** 일정 탭 공개 여부. false 면 누구에게나 '준비 중' 화면만 보인다. 달력 코드는 그대로 둔다. */
+export const SCHEDULE_READY = false;
+
 /** 좌측 사이드바 메뉴 (ADR-017). */
 export const NAV = [
   { href: "/", label: "영상", icon: "video" },

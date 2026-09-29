@@ -91,18 +91,25 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
       <div className="page-head">
         <h1>영상</h1>
         <span className="sub">퍼펭단 관련 유튜브 콘텐츠 아카이브</span>
+        {/* 현황판은 늘 펼쳐두면 첫 화면을 먹는다. 제목 옆 '현황' 버튼 안에 접어둔다. */}
+        {stats && (
+          <details className="stats-pop">
+            <summary>
+              <Icon name="video" size={14} />
+              현황
+              <span className="caret" aria-hidden="true">▾</span>
+            </summary>
+            <dl className="stats">
+              <Stat label="모아둔 영상" value={num(stats.published + stats.maybe)} />
+              <Stat label="이용주" value={num(stats.yongju)} />
+              <Stat label="이선민" value={num(stats.seonmin)} />
+              <Stat label="유영우" value={num(stats.yeongwoo)} />
+              <Stat label="가로 영상" value={num(stats.wide)} />
+              <Stat label="세로 영상" value={num(stats.vertical)} />
+            </dl>
+          </details>
+        )}
       </div>
-
-      {stats && (
-        <dl className="stats">
-          <Stat label="모아둔 영상" value={num(stats.published + stats.maybe)} />
-          <Stat label="이용주" value={num(stats.yongju)} />
-          <Stat label="이선민" value={num(stats.seonmin)} />
-          <Stat label="유영우" value={num(stats.yeongwoo)} />
-          <Stat label="가로 영상" value={num(stats.wide)} />
-          <Stat label="세로 영상" value={num(stats.vertical)} />
-        </dl>
-      )}
 
       <FilterPanel filters={filters} channels={channels} resultCount={resultCount} />
 

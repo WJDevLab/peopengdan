@@ -265,10 +265,19 @@ body {
     min-height: 3.25rem;
     padding: calc(.45rem + env(safe-area-inset-top)) max(.9rem, env(safe-area-inset-right)) .45rem max(.9rem, env(safe-area-inset-left));
     border-right: 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
     backdrop-filter: none;
-    /* 블러를 끈 대신 불투명도를 올려 아래로 지나가는 카드가 비쳐 보이지 않게 한다. */
-    background: color-mix(in srgb, var(--water-top) 94%, transparent);
+    background: transparent;
+  }
+  /* 유리 효과는 가상 요소에만 건다. 사이드바 자체에 걸면 하단 탭바(fixed)가 그 안에 갇힌다. */
+  .sidebar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in srgb, var(--water-top) 72%, transparent);
+    backdrop-filter: saturate(1.4) blur(18px);
+    -webkit-backdrop-filter: saturate(1.4) blur(18px);
   }
   .brand-sub, .side-foot, .side-account .hint { display: none; }
   .brand { font-size: 1.15rem; padding: 0; }
@@ -328,19 +337,23 @@ body {
   }
 
   /* 메뉴는 하단 고정 탭바. 엄지로 닿기 쉬운 자리에 항상 보이게 둔다. */
+  /* 화면 가장자리에 붙은 띠 대신, 살짝 떠 있는 둥근 탭바. 아래 영상이 비쳐 보여 덜 막혀 보인다. */
   .nav {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: max(.75rem, env(safe-area-inset-left));
+    right: max(.75rem, env(safe-area-inset-right));
+    bottom: calc(.6rem + env(safe-area-inset-bottom));
     z-index: 30;
     flex-direction: row;
     justify-content: space-around;
-    gap: .25rem;
-    padding: .35rem max(.4rem, env(safe-area-inset-right)) calc(.35rem + env(safe-area-inset-bottom)) max(.4rem, env(safe-area-inset-left));
-    background: var(--shell);
-    backdrop-filter: blur(14px);
-    border-top: 1px solid var(--line);
+    gap: .15rem;
+    padding: .3rem;
+    background: color-mix(in srgb, var(--surface-solid) 78%, transparent);
+    backdrop-filter: saturate(1.4) blur(18px);
+    -webkit-backdrop-filter: saturate(1.4) blur(18px);
+    border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+    border-radius: 22px;
+    box-shadow: 0 10px 30px rgba(2, 20, 30, .22);
   }
   .nav-item {
     flex: 1 1 0;
@@ -348,32 +361,34 @@ body {
     min-height: 3rem;
     flex-direction: column;
     justify-content: center;
-    gap: .2rem;
+    gap: .15rem;
     padding: .3rem .15rem;
-    border-radius: 12px;
-    font-size: .68rem;
+    border-radius: 16px;
+    font-size: .66rem;
     white-space: nowrap;
   }
-  /* 탭바는 꽉 찬 주황 블록 대신 옅은 배경 + 주황 글자로. 손가락 아래서 덜 무겁다. */
+  .nav-item:hover { background: transparent; }
   .nav-item[data-active="true"] {
-    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
     color: var(--accent);
   }
   .nav-item .count { display: none; }
 
-  /* 하단 탭바에 본문이 가리지 않도록 여백을 둔다. */
-  .main { padding-bottom: calc(4.2rem + env(safe-area-inset-bottom)); }
+  /* 떠 있는 탭바 높이 + 아래 틈만큼 본문 끝에 여백을 둔다. */
+  .main { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
 
-  /* 본문 헤더: 상단 바 아래에 또 붙으면 가려지고 자리만 먹는다. 스크롤과 함께 흘려보낸다. */
+  /* 본문 헤더: 상단 바 아래에 또 붙으면 가려지고 자리만 먹는다. 스크롤과 함께 흘려보낸다.
+     작은 제목 + 설명 대신 큰 제목 하나로 시원하게. */
   .page-head {
     position: static;
     gap: .3rem .6rem;
-    padding: .9rem 1rem .75rem;
+    padding: 1.1rem 1.1rem .7rem;
     background: transparent;
     backdrop-filter: none;
+    border-bottom: 0;
   }
-  .page-head h1 { font-size: 1.25rem; }
-  .page-head .sub { font-size: .76rem; }
+  .page-head h1 { font-size: 1.6rem; letter-spacing: -.02em; }
+  .page-head h1 + .sub { display: none; }
   .page-head .btn { padding: .45rem 1rem; }
 
   /* iOS 사파리는 16px 미만 입력칸에 포커스하면 화면을 확대해버린다. */
@@ -1425,6 +1440,78 @@ body {
 .privacy-list p { margin: 0; font-size: .85rem; line-height: 1.6; color: var(--muted); }
 
 /* ═══════════════════════════════════════════════════════════
+   다듬기 (PC · 모바일 공통)
+   답답함의 원인은 대부분 '칸막이'였다. 띠 배경과 가로줄을 걷어내고
+   카드는 테두리 대신 그림자와 넉넉한 모서리로 떠 보이게 한다.
+   ═══════════════════════════════════════════════════════════ */
+.page-head { border-bottom-color: color-mix(in srgb, var(--line) 55%, transparent); }
+
+.filter-zone { border-bottom: 0; }
+.filter-top { background: transparent; border-bottom: 0; }
+.filter-result { text-align: left; padding-left: clamp(1rem, 3vw, 1.8rem); font-size: .78rem; }
+.filters { background: transparent; border-bottom: 0; }
+.cal-bar { background: transparent; border-bottom: 0; }
+
+.seg { border-color: color-mix(in srgb, var(--line) 60%, transparent); }
+.seg-opt, .chip, .filter-toggle, .nav-item, .btn, .btn-mini {
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .15s ease;
+}
+.chip:active, .seg-opt:active, .filter-toggle:active, .btn:active { transform: scale(.96); }
+
+.card {
+  border: 0;
+  border-radius: 16px;
+  padding: .45rem .45rem .8rem;
+  box-shadow: 0 1px 2px rgba(6, 26, 38, .06), 0 8px 24px rgba(6, 26, 38, .08);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.thumb { border-radius: 12px; }
+@media (hover: hover) {
+  .card:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(6, 26, 38, .08), 0 14px 32px rgba(6, 26, 38, .14); }
+}
+.tag { border-color: transparent; background: color-mix(in srgb, var(--text) 7%, transparent); }
+.tag--cat { border-color: transparent; background: color-mix(in srgb, var(--accent) 13%, transparent); }
+
+/* 현황판은 제목 옆 '현황 ▾' 버튼 안에 접어둔다. */
+.stats-pop { position: relative; margin-left: auto; }
+.stats-pop summary {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  list-style: none;
+  cursor: pointer;
+  padding: .36rem .75rem;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: var(--w-ui);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--surface-solid) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+  user-select: none;
+}
+.stats-pop summary::-webkit-details-marker { display: none; }
+.stats-pop summary .caret { font-size: .7rem; transition: transform .15s ease; }
+.stats-pop[open] summary { color: var(--text); }
+.stats-pop[open] summary .caret { transform: rotate(180deg); }
+.stats-pop .stats {
+  position: absolute;
+  top: calc(100% + .5rem);
+  right: 0;
+  z-index: 20;
+  width: min(360px, calc(100vw - 2rem));
+  margin: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: color-mix(in srgb, var(--text) 12%, var(--surface-solid));
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(2, 20, 30, .25);
+}
+.stats-pop .stat { background: var(--surface-solid); }
+
+.empty--soon { padding-top: clamp(4rem, 16vh, 8rem); }
+.empty--soon .btn { margin-top: .6rem; }
+
+/* ═══════════════════════════════════════════════════════════
    휴대폰 폭 (≤700px)
    원칙: 줄바꿈으로 찌그러뜨리지 말고, 한 줄로 두되 옆으로 밀어서 본다.
    누르는 것은 전부 손가락 크기(높이 36px 이상)로.
@@ -1433,7 +1520,7 @@ body { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 700px) {
   /* 가로로 밀어 보는 줄. 스크롤바는 숨기고 양끝을 화면 가장자리까지 뺀다. */
-  .stats,
+  .filter-top,
   .filters,
   .filter-panel .filter-row:not(form),
   .cal-people {
@@ -1442,56 +1529,25 @@ body { -webkit-tap-highlight-color: transparent; }
     overscroll-behavior-x: contain;
     scrollbar-width: none;
   }
-  .stats::-webkit-scrollbar,
+  .filter-top::-webkit-scrollbar,
   .filters::-webkit-scrollbar,
   .filter-panel .filter-row::-webkit-scrollbar,
   .cal-people::-webkit-scrollbar { display: none; }
 
-  /* 현황판: 2×3 큰 박스 → 한 줄 알약. 첫 화면을 영상에 양보한다. */
-  .stats {
-    display: flex;
-    gap: .4rem;
-    margin: 0;
-    padding: 0 1rem .2rem;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-  }
-  .stat {
-    flex: none;
-    display: flex;
-    align-items: baseline;
-    gap: .4rem;
-    padding: .42rem .8rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-  }
-  .stat dt { margin: 0; font-size: .74rem; white-space: nowrap; }
-  .stat dd { font-size: .95rem; white-space: nowrap; }
-  .stat dd small { font-size: .66rem; margin-left: .12rem; }
-
-  /* 정렬 · 유형 · 필터 버튼: 각각 한 줄을 꽉 채워 같은 폭으로 나눈다. */
+  /* 정렬 · 유형 · 필터: 칸막이 없이 한 줄에 흘려 두고 옆으로 민다.
+     제일 자주 누르는 '필터 · 검색'을 맨 앞에 둔다. */
   .filter-top {
-    display: grid;
+    display: flex;
+    align-items: center;
     gap: .5rem;
-    padding: .75rem 1rem;
+    padding: .2rem 1rem .6rem;
   }
-  .filter-top-right {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: .5rem;
-    margin-left: 0;
-  }
-  .seg { min-width: 0; }
-  .seg-opt {
-    flex: 1 1 0;
-    min-width: 0;
-    text-align: center;
-    padding: .48rem .3rem;
-    font-size: .82rem;
-  }
-  .filter-toggle { padding: .48rem .85rem; white-space: nowrap; }
-  .filter-result { padding: .5rem 1rem; }
+  .filter-top-right { display: contents; }
+  .filter-toggle { order: -1; flex: none; }
+  .seg { flex: none; }
+  .seg-opt { padding: .45rem .8rem; font-size: .82rem; }
+  .filter-toggle { padding: .45rem .9rem; white-space: nowrap; }
+  .filter-result { padding: .1rem 1.1rem .2rem; }
 
   /* 필터 패널: 검색창은 한 줄 전체, 칩 줄은 옆으로 밀기. */
   .filter-panel { gap: .65rem; padding: .3rem 0 1rem; }
@@ -1509,7 +1565,7 @@ body { -webkit-tap-highlight-color: transparent; }
   }
 
   /* 영상 그리드는 한 줄 1개 그대로, 테두리 여백만 줄인다. */
-  .grid { padding: .9rem 1rem 1rem; gap: .6rem; }
+  .grid { padding: .6rem 1rem 1rem; gap: 1rem; }
   .pinned-zone { margin: .3rem 1rem 0; padding: .8rem .7rem 1rem; }
   .card-title { font-size: 1rem; }
   /* 어드민 버튼은 카드 위에서 손가락으로 누르기 쉽게 키운다. */
